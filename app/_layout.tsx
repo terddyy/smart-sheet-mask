@@ -2,12 +2,14 @@ import "../global.css";
 import { Tabs } from "expo-router";
 import { View, StatusBar } from "react-native";
 import { Moon, Sliders, Settings } from "lucide-react-native";
+import { BluetoothProvider } from "../contexts/BluetoothContext";
 
 export default function Layout() {
     return (
-        <View className="flex-1 bg-midnight-navy">
-            <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
-            <Tabs
+        <BluetoothProvider>
+            <View className="flex-1 bg-midnight-navy">
+                <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
+                <Tabs
                 screenOptions={{
                     headerShown: false,
                     tabBarStyle: {
@@ -44,5 +46,6 @@ export default function Layout() {
                 />
             </Tabs>
         </View>
+        </BluetoothProvider>
     );
 }

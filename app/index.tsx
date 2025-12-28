@@ -1,14 +1,45 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import BreathingRing from '../components/BreathingRing';
 import { Bluetooth, Battery } from 'lucide-react-native';
+import { useBluetooth } from '../contexts/BluetoothContext';
+import BluetoothService from '../services/BluetoothService';
 
 // Dashboard Screen
 export default function Dashboard() {
-    const [isConnected] = React.useState(true); // Mock connection state
+    const { isConnected, isConnecting, connect } = useBluetooth();
+    const [batteryLevel, setBatteryLevel] = useState(87); // Default value
     const currentHour = new Date().getHours();
     const greeting = currentHour < 12 ? 'Good Morning' : currentHour < 18 ? 'Good Afternoon' : 'Good Evening';
+
+    useEffect(() => {
+        // Listen for status updates from ESP32
+        const handleStatus = (status: any) => {
+            if (status.battery !== undefined) {
+                setBatteryLevel(status.battery);
+            }
+        };
+
+        BluetoothService.on('status', handleStatus);
+
+        // Request initial status when connected
+        if (isConnected) {
+            BluetoothService.requestStatus().catch(console.error);
+        }
+
+        return () => {
+            BluetoothService.off('status', handleStatus);
+        };
+    }, [isConnected]);
+
+    const handleConnect = async () => {
+        try {
+            await connect();
+        } catch (error) {
+            console.error('Connection failed:', error);
+        }
+    };
 
     return (
         <SafeAreaView className="flex-1 bg-midnight-navy">
@@ -17,15 +48,34 @@ export default function Dashboard() {
                 <View className="mb-8">
                     <Text className="text-4xl font-bold text-white mb-2">{greeting}</Text>
                     <View className="flex-row items-center">
-                        <View className={`flex-row items-center mr-4 px-3 py-2 rounded-full ${isConnected ? 'bg-biolum-blue/20' : 'bg-red-500/20'}`}>
-                            <Bluetooth {...({ size: 16, color: isConnected ? '#60a5fa' : '#ef4444' } as any)} />
-                            <Text className={`ml-2 text-sm font-semibold ${isConnected ? 'text-biolum-blue' : 'text-red-500'}`}>
-                                {isConnected ? 'Connected' : 'Disconnected'}
+                        <TouchableOpacity
+                            onPress={handleConnect}
+                            disabled={isConnected || isConnecting}
+                            className={`flex-row items-center mr-4 px-3 py-2 rounded-full ${
+                                isConnected 
+                                    ? 'bg-biolum-blue/20' 
+                                    : isConnecting 
+                                        ? 'bg-yellow-500/20' 
+                                        : 'bg-red-500/20'
+                            }`}
+                        >
+                            <Bluetooth {...({ 
+                                size: 16, 
+                                color: isConnected ? '#60a5fa' : isConnecting ? '#eab308' : '#ef4444' 
+                            } as any)} />
+                            <Text className={`ml-2 text-sm font-semibold ${
+                                isConnected 
+                                    ? 'text-biolum-blue' 
+                                    : isConnecting 
+                                        ? 'text-yellow-500' 
+                                        : 'text-red-500'
+                            }`}>
+                                {isConnected ? 'Connected' : isConnecting ? 'Connecting...' : 'Tap to Connect'}
                             </Text>
-                        </View>
+                        </TouchableOpacity>
                         <View className="flex-row items-center px-3 py-2 rounded-full bg-soft-lavender/20">
                             <Battery {...({ size: 16, color: "#a78bfa" } as any)} />
-                            <Text className="ml-2 text-sm font-semibold text-soft-lavender">87%</Text>
+                            <Text className="ml-2 text-sm font-semibold text-soft-lavender">{batteryLevel}%</Text>
                         </View>
                     </View>
                 </View>
