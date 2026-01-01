@@ -4,13 +4,13 @@
     "slug": "Smart-sheet-mask",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./public/logo.jpg",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./public/logo.jpg",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#0B1220"
     },
     "ios": {
       "supportsTablet": true,
@@ -23,8 +23,8 @@
     "android": {
       "package": "com.smartsheetmask.app",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./public/logo.jpg",
+        "backgroundColor": "#0B1220"
       },
       "edgeToEdgeEnabled": true,
       "permissions": [
@@ -36,7 +36,7 @@
       ]
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./public/logo.jpg"
     },
     "plugins": [
       "expo-router"

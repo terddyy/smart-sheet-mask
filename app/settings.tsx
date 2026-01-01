@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, SafeAreaView, TouchableOpacity, Switch, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, Switch, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { AlarmClock, ShieldAlert, Moon, Info } from 'lucide-react-native';
+import SessionControl from '../components/SessionControl';
 
 export default function Settings() {
     const [alarmEnabled, setAlarmEnabled] = useState(false);
@@ -99,6 +101,9 @@ export default function Settings() {
                     <Text className="text-gray-600 text-xs mt-1">Version 1.0.0 • Demo Mode</Text>
                 </View>
             </ScrollView>
+
+            {/* Session Control Bar */}
+            <SessionControl />
         </SafeAreaView>
     );
 }

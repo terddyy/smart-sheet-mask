@@ -10,7 +10,7 @@ import base64 from 'base-64';
  * following the ESP32 command protocol
  */
 class BluetoothService {
-  private manager: BleManager;
+  private manager: BleManager | null = null;
   private device: Device | null = null;
   private isConnected: boolean = false;
   private listeners: Map<string, Function[]> = new Map();
@@ -21,7 +21,17 @@ class BluetoothService {
   private readonly CHARACTERISTIC_UUID = '0000FFE1-0000-1000-8000-00805F9B34FB';
 
   constructor() {
-    this.manager = new BleManager();
+    // Lazy initialization to avoid issues during module loading
+  }
+
+  /**
+   * @brief Initialize BLE Manager lazily
+   */
+  private getManager(): BleManager {
+    if (!this.manager) {
+      this.manager = new BleManager();
+    }
+    return this.manager;
   }
 
   /**
@@ -64,7 +74,7 @@ class BluetoothService {
       throw new Error('Bluetooth permissions not granted');
     }
 
-    const state = await this.manager.state();
+    const state = await this.getManager().state();
     if (state !== State.PoweredOn) {
       throw new Error('Bluetooth is not powered on');
     }
@@ -80,36 +90,78 @@ class BluetoothService {
    */
   async scanForDevice(
     onDeviceFound?: (device: Device) => void,
-    timeoutMs: number = 10000
+    timeoutMs: number = 20000
   ): Promise<Device | null> {
     return new Promise((resolve, reject) => {
       let found = false;
+      const foundDevices = new Map<string, any>();
+      
       const timeout = setTimeout(() => {
-        this.manager.stopDeviceScan();
+        this.getManager().stopDeviceScan();
         if (!found) {
+          console.log('\n=== SCAN TIMEOUT - Devices found ===');
+          foundDevices.forEach((dev, id) => {
+            console.log(`Device ID: ${id}, Name: ${dev.name || 'UNNAMED'}, Services: ${dev.serviceUUIDs}`);
+          });
+          console.log('===================================\n');
           reject(new Error('Device scan timeout'));
         }
       }, timeoutMs);
 
       console.log('Starting BLE scan for device:', this.DEVICE_NAME);
+      console.log('Looking for service UUID:', this.SERVICE_UUID);
 
-      this.manager.startDeviceScan(null, { allowDuplicates: false }, (error, device) => {
+      this.getManager().startDeviceScan(null, { allowDuplicates: true }, (error: any, device: any) => {
         if (error) {
           console.error('Scan error:', error);
           clearTimeout(timeout);
-          this.manager.stopDeviceScan();
+          this.getManager().stopDeviceScan();
           reject(error);
           return;
         }
 
         if (device) {
-          console.log('Found device:', device.name, 'ID:', device.id);
+          // Track unique devices
+          if (!foundDevices.has(device.id)) {
+            foundDevices.set(device.id, device);
+            console.log('📱 New device:', device.name || 'UNNAMED', 'ID:', device.id, 'RSSI:', device.rssi);
+            if (device.serviceUUIDs && device.serviceUUIDs.length > 0) {
+              console.log('   Services:', device.serviceUUIDs);
+            }
+          }
           
-          if (device.name === this.DEVICE_NAME) {
+          // Match by name
+          const matchesName = device.name === this.DEVICE_NAME;
+          
+          // Match by service UUID (check various formats)
+          const matchesService = device.serviceUUIDs && 
+            device.serviceUUIDs.some((uuid: string) => {
+              const normalizedUUID = uuid.toUpperCase().replace(/-/g, '');
+              const targetUUID = this.SERVICE_UUID.toUpperCase().replace(/-/g, '');
+              return normalizedUUID.includes('FFE0') || 
+                     normalizedUUID === targetUUID ||
+                     normalizedUUID.includes(targetUUID.substring(4, 8)); // Check short UUID
+            });
+          
+          // Match devices with relevant names (broader match)
+          const hasRelevantName = device.name && (
+            device.name.toUpperCase().includes('SMART') ||
+            device.name.toUpperCase().includes('MASSAGE') ||
+            device.name.toUpperCase().includes('MASK') ||
+            device.name === this.DEVICE_NAME
+          );
+          
+          if (matchesName || matchesService || hasRelevantName) {
             found = true;
             clearTimeout(timeout);
-            this.manager.stopDeviceScan();
-            console.log('Target device found!');
+            this.getManager().stopDeviceScan();
+            console.log('\n✅ TARGET DEVICE FOUND!');
+            console.log('   Name:', device.name || 'UNNAMED');
+            console.log('   ID:', device.id);
+            console.log('   RSSI:', device.rssi);
+            console.log('   Services:', device.serviceUUIDs);
+            console.log('   Match reason:', matchesName ? 'NAME' : matchesService ? 'SERVICE_UUID' : 'RELEVANT_NAME');
+            console.log('');
             
             if (onDeviceFound) {
               onDeviceFound(device);
@@ -130,7 +182,7 @@ class BluetoothService {
   async connect(device?: Device): Promise<boolean> {
     try {
       if (!device) {
-        device = await this.scanForDevice();
+        device = (await this.scanForDevice()) ?? undefined;
       }
 
       if (!device) {
@@ -138,6 +190,15 @@ class BluetoothService {
       }
 
       this.device = await device.connect();
+      
+      // Request larger MTU for longer messages
+      try {
+        const mtu = await this.device.requestMTU(512);
+        console.log('MTU negotiated:', mtu);
+      } catch (error) {
+        console.warn('MTU request failed:', error);
+      }
+      
       await this.device.discoverAllServicesAndCharacteristics();
       this.isConnected = true;
 
@@ -169,7 +230,7 @@ class BluetoothService {
       this.device.monitorCharacteristicForService(
         this.SERVICE_UUID,
         this.CHARACTERISTIC_UUID,
-        (error, characteristic) => {
+        (error: any, characteristic: any) => {
           if (error) {
             console.error('Monitor error:', error);
             return;
@@ -199,8 +260,8 @@ class BluetoothService {
       this.emit('commandAck', data);
     } else if (data.startsWith('ERROR:')) {
       this.emit('error', new Error(data.substring(6)));
-    } else if (data.startsWith('STATUS:')) {
-      // Parse status response: "STATUS: Mode=2 Intensity=50 TimeLeft=300 Battery=87"
+    } else if (data.startsWith('STATUS:') || data.startsWith('S:')) {
+      // Parse status response (supports CSV and key=value formats)
       const status = this.parseStatus(data);
       this.emit('status', status);
     } else if (data === 'TIMER_COMPLETE') {
@@ -210,7 +271,7 @@ class BluetoothService {
 
   /**
    * @brief Parse status response from ESP32
-   * @param data Status string
+   * @param data Status string (CSV: "S:0,0,0,87" or key=value: "STATUS: M=0 I=0 T=0 B=0")
    * @returns Parsed status object
    */
   private parseStatus(data: string): {
@@ -219,7 +280,7 @@ class BluetoothService {
     timeLeft: number;
     battery: number;
   } {
-    const parts = data.split(' ');
+    console.log('Parsing status:', data);
     const status = {
       mode: 0,
       intensity: 0,
@@ -227,18 +288,33 @@ class BluetoothService {
       battery: 0,
     };
 
-    parts.forEach(part => {
-      if (part.startsWith('Mode=')) {
-        status.mode = parseInt(part.split('=')[1]);
-      } else if (part.startsWith('Intensity=')) {
-        status.intensity = parseInt(part.split('=')[1]);
-      } else if (part.startsWith('TimeLeft=')) {
-        status.timeLeft = parseInt(part.split('=')[1]);
-      } else if (part.startsWith('Battery=')) {
-        status.battery = parseInt(part.split('=')[1]);
+    // CSV format: "S:0,0,0,87"
+    if (data.startsWith('S:')) {
+      const values = data.substring(2).split(',');
+      if (values.length >= 4) {
+        status.mode = parseInt(values[0]) || 0;
+        status.intensity = parseInt(values[1]) || 0;
+        status.timeLeft = parseInt(values[2]) || 0;
+        status.battery = parseInt(values[3]) || 0;
       }
-    });
+    } else {
+      // Key=value format
+      const parts = data.split(' ');
+      parts.forEach(part => {
+        // Support both compact (M=, I=, T=, B=) and old format (Mode=, Intensity=, etc.)
+        if (part.startsWith('M=') || part.startsWith('Mode=')) {
+          status.mode = parseInt(part.split('=')[1]);
+        } else if (part.startsWith('I=') || part.startsWith('Intensity=')) {
+          status.intensity = parseInt(part.split('=')[1]);
+        } else if (part.startsWith('T=') || part.startsWith('TimeLeft=')) {
+          status.timeLeft = parseInt(part.split('=')[1]);
+        } else if (part.startsWith('B=') || part.startsWith('Battery=')) {
+          status.battery = parseInt(part.split('=')[1]);
+        }
+      });
+    }
 
+    console.log('Parsed status:', status);
     return status;
   }
 
@@ -289,6 +365,8 @@ class BluetoothService {
   async setMode(mode: number, intensity: number): Promise<void> {
     const command = `M${mode}${intensity}`;
     await this.sendCommand(command);
+    // Request status immediately to update UI
+    setTimeout(() => this.requestStatus().catch(console.error), 100);
   }
 
   /**
@@ -298,6 +376,8 @@ class BluetoothService {
   async setTimer(durationSeconds: number): Promise<void> {
     const command = `T${durationSeconds}`;
     await this.sendCommand(command);
+    // Request status immediately to update UI
+    setTimeout(() => this.requestStatus().catch(console.error), 100);
   }
 
   /**
@@ -356,7 +436,9 @@ class BluetoothService {
   destroy(): void {
     this.disconnect();
     this.listeners.clear();
-    this.manager.destroy();
+    if (this.manager) {
+      this.manager.destroy();
+    }
   }
 }
 

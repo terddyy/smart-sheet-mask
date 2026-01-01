@@ -13,6 +13,10 @@ void BluetoothHandler::setCharacteristic(BLECharacteristic* characteristic) {
 
 bool BluetoothHandler::begin(const char* deviceName) {
   BLEDevice::init(deviceName);
+  
+  // Set MTU to larger size for longer messages
+  BLEDevice::setMTU(512);
+  
   pServer = BLEDevice::createServer();
   
   BLEService *pService = pServer->createService(SERVICE_UUID);
@@ -131,15 +135,25 @@ void BluetoothHandler::sendResponse(const String& message) {
   if (deviceConnected && pCharacteristic) {
     pCharacteristic->setValue(message.c_str());
     pCharacteristic->notify();
+    delay(20);  // Small delay to ensure message is sent completely
   }
 }
 
 void BluetoothHandler::sendStatus() {
-  String status = "STATUS:";
-  status += " Mode=" + String(sessionManager->getMode());
-  status += " Intensity=" + String(sessionManager->getIntensity());
-  status += " TimeLeft=" + String(sessionManager->getTimeRemaining());
-  status += " Battery=" + String(sessionManager->getBatteryPercentage());
+  int batteryPercent = sessionManager->getBatteryPercentage();
+  
+  // Send as CSV format: S:mode,intensity,time,battery
+  String status = "S:";
+  status += String(sessionManager->getMode()) + ",";
+  status += String(sessionManager->getIntensity()) + ",";
+  status += String(sessionManager->getTimeRemaining()) + ",";
+  status += String(batteryPercent);
+  
+  Serial.print("Sending status: ");
+  Serial.println(status);
+  Serial.print("Message length: ");
+  Serial.println(status.length());
+  
   sendResponse(status);
 }
 

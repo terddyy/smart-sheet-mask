@@ -55,9 +55,17 @@ void MotorController::applyPulse(int intensity, unsigned long timestamp) {
 
 void MotorController::applyWave(int intensity, unsigned long timestamp) {
   int duty = intensityToDuty(intensity);
-  int activeMotor = (timestamp / WAVE_STEP_MS) % numMotors;
+  int primaryMotor = (timestamp / WAVE_STEP_MS) % numMotors;
+  int secondaryMotor = (primaryMotor + 1) % numMotors;
   
+  // Create a smoother wave by activating 2 adjacent motors
   for (int i = 0; i < numMotors; i++) {
-    setMotor(i, (i == activeMotor) ? duty : 0);
+    if (i == primaryMotor) {
+      setMotor(i, duty);  // Full intensity on primary
+    } else if (i == secondaryMotor) {
+      setMotor(i, duty / 2);  // Half intensity on secondary for smooth transition
+    } else {
+      setMotor(i, 0);
+    }
   }
 }

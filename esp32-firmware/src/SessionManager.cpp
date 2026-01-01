@@ -45,14 +45,27 @@ unsigned long SessionManager::getTimeRemaining() const {
 }
 
 float SessionManager::getBatteryVoltage() const {
-  // Read ADC value (12-bit: 0-4095)
-  int adcValue = analogRead(BATTERY_PIN);
+  // Read ADC value multiple times for accuracy
+  int adcSum = 0;
+  const int numSamples = 10;
   
-  // Convert ADC reading to voltage
-  float voltage = (adcValue / ADC_RESOLUTION) * ADC_REFERENCE_VOLTAGE;
+  for (int i = 0; i < numSamples; i++) {
+    adcSum += analogRead(BATTERY_PIN);
+    delay(5);
+  }
+  
+  int adcValue = adcSum / numSamples;
+  
+  // Convert ADC reading to voltage (with 11db attenuation: 0-3.6V)
+  float voltage = (adcValue / ADC_RESOLUTION) * 3.6;
   
   // Account for voltage divider
   voltage *= BATTERY_VOLTAGE_DIVIDER;
+  
+  Serial.print("Battery ADC: ");
+  Serial.print(adcValue);
+  Serial.print(" Voltage: ");
+  Serial.println(voltage);
   
   return voltage;
 }
@@ -68,5 +81,10 @@ int SessionManager::getBatteryPercentage() const {
   float percentage = ((voltage - BATTERY_MIN_VOLTAGE) / 
                       (BATTERY_MAX_VOLTAGE - BATTERY_MIN_VOLTAGE)) * 100.0;
   
-  return constrain((int)percentage, 0, 100);
+  int batteryPercent = constrain((int)percentage, 0, 100);
+  
+  Serial.print("Battery Percentage: ");
+  Serial.println(batteryPercent);
+  
+  return batteryPercent;
 }

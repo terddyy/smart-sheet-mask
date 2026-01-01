@@ -16,8 +16,8 @@ const int MOTOR_PINS[NUM_MOTORS] = {18, 19, 21, 22, 23, 25, 26, 27};
 // Battery Monitoring
 #define BATTERY_PIN 34              // ADC1_CH6 (GPIO34) for battery voltage
 #define BATTERY_VOLTAGE_DIVIDER 2.0 // Voltage divider ratio (R1=R2)
-#define BATTERY_MIN_VOLTAGE 3.3     // Minimum battery voltage (3.3V)
-#define BATTERY_MAX_VOLTAGE 4.2     // Maximum battery voltage (4.2V for Li-ion)
+#define BATTERY_MIN_VOLTAGE 3.0     // Minimum battery voltage (3.0V for LiFePO4/Li-ion)
+#define BATTERY_MAX_VOLTAGE 4.2     // Maximum battery voltage (4.2V for Li-ion, 3.65V for LiFePO4)
 #define ADC_RESOLUTION 4095.0       // 12-bit ADC resolution
 #define ADC_REFERENCE_VOLTAGE 3.3   // ESP32 ADC reference voltage
 
@@ -28,9 +28,9 @@ const int MOTOR_PINS[NUM_MOTORS] = {18, 19, 21, 22, 23, 25, 26, 27};
 
 // Timing Configuration
 #define UPDATE_INTERVAL_MS 50
-#define PULSE_ON_DURATION_MS 300
-#define PULSE_CYCLE_MS 1000
-#define WAVE_STEP_MS 150
+#define PULSE_ON_DURATION_MS 500   // 0.5 seconds ON
+#define PULSE_CYCLE_MS 1500        // 1.5 second total cycle (0.5s ON, 1s OFF)
+#define WAVE_STEP_MS 200           // Wave moves faster between motors
 
 // Command Protocol
 #define CMD_MODE 'M'

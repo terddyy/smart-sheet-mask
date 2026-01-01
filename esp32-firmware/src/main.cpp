@@ -59,6 +59,7 @@ void setup() {
   // Initialize battery monitoring pin
   pinMode(BATTERY_PIN, INPUT);
   analogReadResolution(12);  // Set ADC to 12-bit resolution
+  analogSetAttenuation(ADC_11db);  // 0-3.6V range (for voltage divider)
   Serial.println("Battery monitoring initialized");
   
   // Initialize Bluetooth

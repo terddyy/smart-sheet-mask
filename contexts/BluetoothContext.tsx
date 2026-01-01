@@ -4,10 +4,14 @@ import BluetoothService from '../services/BluetoothService';
 interface BluetoothContextType {
   isConnected: boolean;
   isConnecting: boolean;
+  currentMode: number;
+  currentIntensity: number;
+  timeLeft: number;
   connect: () => Promise<void>;
   disconnect: () => Promise<void>;
   setMode: (mode: number, intensity: number) => Promise<void>;
   setTimer: (durationSeconds: number) => Promise<void>;
+  stopSession: () => Promise<void>;
   error: string | null;
 }
 
@@ -17,9 +21,12 @@ interface BluetoothProviderProps {
   children: ReactNode;
 }
 
-export const BluetoothProvider: React.FC<BluetoothProviderProps> = ({ children }) => {
+export const BluetoothProvider: React.FC<BluetoothProviderProps> = ({ children }: BluetoothProviderProps) => {
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [currentMode, setCurrentMode] = useState(0);
+  const [currentIntensity, setCurrentIntensity] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -40,6 +47,8 @@ export const BluetoothProvider: React.FC<BluetoothProviderProps> = ({ children }
       setIsConnected(true);
       setIsConnecting(false);
       setError(null);
+      // Request initial status immediately after connection
+      BluetoothService.requestStatus().catch(console.error);
     };
 
     const handleDisconnected = () => {
@@ -52,16 +61,50 @@ export const BluetoothProvider: React.FC<BluetoothProviderProps> = ({ children }
       setIsConnecting(false);
     };
 
+    const handleStatus = (status: any) => {
+      console.log('BluetoothContext received status:', status);
+      if (status.mode !== undefined) {
+        setCurrentMode(status.mode);
+      }
+      if (status.intensity !== undefined) {
+        setCurrentIntensity(status.intensity);
+      }
+      if (status.timeLeft !== undefined) {
+        setTimeLeft(status.timeLeft);
+      }
+    };
+
     BluetoothService.on('connected', handleConnected);
     BluetoothService.on('disconnected', handleDisconnected);
     BluetoothService.on('error', handleError);
+    BluetoothService.on('status', handleStatus);
 
     return () => {
       BluetoothService.off('connected', handleConnected);
       BluetoothService.off('disconnected', handleDisconnected);
       BluetoothService.off('error', handleError);
+      BluetoothService.off('status', handleStatus);
     };
   }, []);
+
+  // Periodic status polling when connected
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout | null = null;
+
+    if (isConnected) {
+      // Poll more frequently if session is active (5s), less if idle (15s)
+      const pollInterval = currentMode > 0 ? 5000 : 15000;
+      intervalId = setInterval(() => {
+        BluetoothService.requestStatus().catch(console.error);
+      }, pollInterval);
+    }
+
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [isConnected, currentMode]);
 
   const connect = async () => {
     setIsConnecting(true);
@@ -103,15 +146,31 @@ export const BluetoothProvider: React.FC<BluetoothProviderProps> = ({ children }
     }
   };
 
+  const stopSession = async () => {
+    try {
+      setCurrentMode(0); // Optimistic update for instant UI
+      setCurrentIntensity(0);
+      setTimeLeft(0);
+      await BluetoothService.setMode(0, 0);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to stop session');
+      throw err;
+    }
+  };
+
   return (
     <BluetoothContext.Provider
       value={{
         isConnected,
         isConnecting,
+        currentMode,
+        currentIntensity,
+        timeLeft,
         connect,
         disconnect,
         setMode,
         setTimer,
+        stopSession,
         error,
       }}
     >
