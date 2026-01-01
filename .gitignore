@@ -39,3 +39,11 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# ESP32/PlatformIO build files
+esp32-firmware/.pio/
+esp32-firmware/.vscode/
+esp32-firmware/.platformio/
+esp32-firmware/build/
+esp32-firmware/*.bin
+esp32-firmware/*.hex

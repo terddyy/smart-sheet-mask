@@ -3,6 +3,7 @@
     "name": "Smart-sheet-mask",
     "slug": "Smart-sheet-mask",
     "version": "1.0.0",
+    "scheme": "smartsheetmask",
     "orientation": "portrait",
     "icon": "./public/logo.jpg",
     "userInterfaceStyle": "light",

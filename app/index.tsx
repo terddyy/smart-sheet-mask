@@ -2,13 +2,13 @@ import React from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import BreathingRing from '../components/BreathingRing';
+// import BreathingRing from '../components/BreathingRing'; // Temporarily disabled due to worklets
 import SessionControl from '../components/SessionControl';
 import { Bluetooth } from 'lucide-react-native';
 import { useBluetooth } from '../contexts/BluetoothContext';
 import BluetoothService from '../services/BluetoothService';
 
-// Dashboard Screen
+// Dashboard Screen - Home page with quick start presets
 export default function Dashboard() {
     const { 
         isConnected, 
@@ -115,7 +115,10 @@ export default function Dashboard() {
 
                 {/* Breathing Ring */}
                 <View className="flex-1 items-center justify-center mb-6">
-                    <BreathingRing />
+                    {/* <BreathingRing /> */}
+                    <View className="w-48 h-48 rounded-full bg-biolum-blue/10 items-center justify-center">
+                        <Text className="text-biolum-blue text-6xl">😴</Text>
+                    </View>
                     <Text className="text-gray-400 mt-6 text-center text-sm">
                         Your mask is ready for sleep
                     </Text>
