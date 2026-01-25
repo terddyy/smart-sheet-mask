@@ -5,7 +5,9 @@ MotorController::MotorController(const int* pins, int count, int maxDuty)
 
 bool MotorController::begin() {
   for (int i = 0; i < numMotors; i++) {
-    if (ledcSetup(i, PWM_FREQUENCY, PWM_RESOLUTION) == 0) {
+    int rc = ledcSetup(i, PWM_FREQUENCY, PWM_RESOLUTION);
+    if (rc < 0) {
+      Serial.printf("ERROR: ledcSetup channel %d failed with code %d\n", i, rc);
       return false;  // PWM setup failed
     }
     ledcAttachPin(motorPins[i], i);
