@@ -44,11 +44,13 @@ monitor_speed = 115200
 #### Mode Command
 Format: `Mxy\n`
 - M: Mode command identifier
-- x: Mode number (0-3)
+- x: Mode number (0-5)
   - 0 = OFF
   - 1 = PULSE
   - 2 = WAVE
   - 3 = CONSTANT
+  - 4 = HEARTBEAT
+  - 5 = RAINDROPS
 - y: Intensity (0-100)
 
 Example: `M145\n` = Pulse mode at 45% intensity

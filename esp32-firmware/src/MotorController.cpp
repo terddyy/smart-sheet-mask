@@ -71,3 +71,55 @@ void MotorController::applyWave(int intensity, unsigned long timestamp) {
     }
   }
 }
+
+void MotorController::applyHeartbeat(int intensity, unsigned long timestamp) {
+  unsigned long cyclePos = timestamp % HEARTBEAT_CYCLE_MS;
+  int duty = intensityToDuty(intensity);
+  int centerA = (numMotors / 2) - 1;
+  int centerB = (numMotors / 2);
+
+  // Default to all off
+  for (int i = 0; i < numMotors; i++) setMotor(i, 0);
+
+  if (cyclePos < HEARTBEAT_SHORT_ON_MS) {
+    // First short beat: center motors strong, adjacent gentle
+    setMotor(centerA, duty);
+    setMotor(centerB, duty);
+    if (centerA - 1 >= 0) setMotor(centerA - 1, duty / 3);
+    if (centerB + 1 < numMotors) setMotor(centerB + 1, duty / 3);
+  } else if (cyclePos < HEARTBEAT_SHORT_ON_MS + HEARTBEAT_SHORT_OFF_MS) {
+    // brief pause - all off
+  } else if (cyclePos < HEARTBEAT_SHORT_ON_MS + HEARTBEAT_SHORT_OFF_MS + HEARTBEAT_SHORT_ON_MS) {
+    // Second short beat
+    setMotor(centerA, duty);
+    setMotor(centerB, duty);
+  } else {
+    // long pause - all off
+  }
+}
+
+void MotorController::applyRaindrops(int intensity, unsigned long timestamp) {
+  static unsigned long lastStep = 0;
+  static int activeMotor = -1;
+  static unsigned long dropStart = 0;
+
+  unsigned long step = timestamp / RAINDROP_STEP_MS;
+
+  if (step != lastStep) {
+    lastStep = step;
+    // Decide whether to trigger a new drop this step
+    if (random(100) < RAINDROP_CHANCE_PERCENT) {
+      activeMotor = random(numMotors);
+      dropStart = timestamp;
+    } else {
+      activeMotor = -1;
+    }
+  }
+
+  // Default off
+  for (int i = 0; i < numMotors; i++) setMotor(i, 0);
+
+  if (activeMotor >= 0 && (timestamp - dropStart) < RAINDROP_TAP_MS) {
+    setMotor(activeMotor, intensityToDuty(intensity));
+  }
+}

@@ -32,6 +32,17 @@ const int MOTOR_PINS[NUM_MOTORS] = {18, 19, 21, 22, 23, 25, 26, 27};
 #define PULSE_CYCLE_MS 1500        // 1.5 second total cycle (0.5s ON, 1s OFF)
 #define WAVE_STEP_MS 200           // Wave moves faster between motors
 
+// Heartbeat pattern timing
+#define HEARTBEAT_SHORT_ON_MS 150
+#define HEARTBEAT_SHORT_OFF_MS 100
+#define HEARTBEAT_LONG_PAUSE_MS 700
+#define HEARTBEAT_CYCLE_MS (HEARTBEAT_SHORT_ON_MS + HEARTBEAT_SHORT_OFF_MS + HEARTBEAT_SHORT_ON_MS + HEARTBEAT_LONG_PAUSE_MS)
+
+// Raindrops pattern timing
+#define RAINDROP_STEP_MS 150
+#define RAINDROP_TAP_MS 80
+#define RAINDROP_CHANCE_PERCENT 30  // 30% chance of a drop each step
+
 // Command Protocol
 #define CMD_MODE 'M'
 #define CMD_TIMER 'T'
@@ -42,7 +53,9 @@ enum MassageMode {
   MODE_OFF = 0,
   MODE_PULSE = 1,
   MODE_WAVE = 2,
-  MODE_CONSTANT = 3
+  MODE_CONSTANT = 3,
+  MODE_HEARTBEAT = 4,
+  MODE_RAINDROPS = 5
 };
 
 #endif

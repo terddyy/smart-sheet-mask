@@ -61,6 +61,8 @@ void setup() {
   analogReadResolution(12);  // Set ADC to 12-bit resolution
   analogSetAttenuation(ADC_11db);  // 0-3.6V range (for voltage divider)
   Serial.println("Battery monitoring initialized");
+  // Seed random for raindrops pattern
+  randomSeed(analogRead(BATTERY_PIN) ^ millis());
   
   // Initialize Bluetooth
   if (!bluetoothHandler.begin(DEVICE_NAME)) {

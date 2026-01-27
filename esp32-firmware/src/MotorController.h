@@ -70,6 +70,20 @@ public:
    * @param timestamp Current time in milliseconds
    */
   void applyWave(int intensity, unsigned long timestamp);
+  
+  /**
+   * @brief Apply heartbeat pattern (two quick beats)
+   * @param intensity Intensity percentage (0-100)
+   * @param timestamp Current time in milliseconds
+   */
+  void applyHeartbeat(int intensity, unsigned long timestamp);
+
+  /**
+   * @brief Apply raindrops pattern (random short taps)
+   * @param intensity Intensity percentage (0-100)
+   * @param timestamp Current time in milliseconds
+   */
+  void applyRaindrops(int intensity, unsigned long timestamp);
 };
 
 #endif
