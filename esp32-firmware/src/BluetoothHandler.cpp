@@ -89,7 +89,7 @@ void BluetoothHandler::processCommand(const String& command) {
 }
 
 void BluetoothHandler::processModeCommand(const String& command) {
-  // Format: Mxy where x=mode (1-3), y=intensity (0-100)
+  // Format: Mxy where x=mode (0-5), y=intensity (0-100)
   if (command.length() < 3) {
     sendResponse("ERROR: Invalid mode command format");
     return;
@@ -98,13 +98,22 @@ void BluetoothHandler::processModeCommand(const String& command) {
   int mode = command.substring(1, 2).toInt();
   int intensity = command.substring(2).toInt();
   
-  if (mode < 0 || mode > 3) {
+  // Validate mode and intensity
+  if (mode < 0 || mode > 5) {
     sendResponse("ERROR: Invalid mode value");
     return;
   }
+
+  if (intensity < 0) intensity = 0;
+  if (intensity > 100) intensity = 100;
   
   sessionManager->setMode(static_cast<MassageMode>(mode));
   sessionManager->setIntensity(intensity);
+  
+  Serial.print("Set Mode: ");
+  Serial.print(mode);
+  Serial.print(" Intensity: ");
+  Serial.println(intensity);
   
   sendResponse("OK: Mode=" + String(mode) + " Intensity=" + String(intensity));
 }

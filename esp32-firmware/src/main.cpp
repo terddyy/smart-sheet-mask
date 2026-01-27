@@ -123,5 +123,21 @@ void updateMotorPattern(unsigned long timestamp) {
     case MODE_CONSTANT:
       motorController.applyConstant(intensity);
       break;
+
+    case MODE_HEARTBEAT:
+      Serial.println("Applying HEARTBEAT pattern");
+      motorController.applyHeartbeat(intensity, timestamp);
+      break;
+
+    case MODE_RAINDROPS:
+      Serial.println("Applying RAINDROPS pattern");
+      motorController.applyRaindrops(intensity, timestamp);
+      break;
+
+    default:
+      Serial.print("WARN: Unknown mode: ");
+      Serial.println((int)mode);
+      motorController.stopAll();
+      break;
   }
 }
