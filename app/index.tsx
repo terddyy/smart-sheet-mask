@@ -2,7 +2,6 @@ import React from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-// import BreathingRing from '../components/BreathingRing'; // Temporarily disabled due to worklets
 import SessionControl from '../components/SessionControl';
 import { Bluetooth } from 'lucide-react-native';
 import { useBluetooth } from '../contexts/BluetoothContext';
