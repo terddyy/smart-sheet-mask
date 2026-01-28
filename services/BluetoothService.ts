@@ -203,7 +203,8 @@ class BluetoothService {
       this.isConnected = true;
 
       // Listen for disconnection
-      this.device.onDisconnected(() => {
+      this.device.onDisconnected((error, disconnectedDevice) => {
+        console.log('Device disconnected:', error?.message || 'User initiated');
         this.isConnected = false;
         this.device = null;
         this.emit('disconnected');
@@ -336,8 +337,17 @@ class BluetoothService {
    * @returns Promise<void>
    */
   async sendCommand(command: string): Promise<void> {
-    if (!this.isConnected || !this.device) {
-      throw new Error('Device not connected');
+    if (!this.device) {
+      this.isConnected = false;
+      throw new Error('No device reference');
+    }
+
+    // Check actual device connection state
+    const isActuallyConnected = await this.device.isConnected();
+    if (!isActuallyConnected) {
+      this.isConnected = false;
+      this.emit('disconnected');
+      throw new Error('Device disconnected');
     }
 
     try {
@@ -351,9 +361,15 @@ class BluetoothService {
       );
 
       console.log('Sent command:', command);
-    } catch (error) {
-      console.error('Error sending command:', error);
-      throw error;
+    } catch (error: any) {
+      // Handle BLE-specific errors (201 = device disconnected, 205 = characteristic not found)
+      if (error?.errorCode === 201 || error?.errorCode === 205 || 
+          error?.message?.includes('disconnected')) {
+        this.isConnected = false;
+        this.device = null;
+        this.emit('disconnected');
+      }
+      throw new Error(`Command failed: ${error?.message || 'Unknown error'}`);
     }
   }
 

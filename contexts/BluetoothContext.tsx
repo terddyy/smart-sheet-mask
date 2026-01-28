@@ -129,31 +129,49 @@ export const BluetoothProvider: React.FC<BluetoothProviderProps> = ({ children }
   };
 
   const setMode = async (mode: number, intensity: number) => {
+    setError(null);
     try {
       await BluetoothService.setMode(mode, intensity);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to set mode');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to set mode';
+      setError(errorMessage);
+      // Don't leave UI in inconsistent state - request status to sync
+      if (isConnected) {
+        BluetoothService.requestStatus().catch(console.error);
+      }
       throw err;
     }
   };
 
   const setTimer = async (durationSeconds: number) => {
+    setError(null);
     try {
       await BluetoothService.setTimer(durationSeconds);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to set timer');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to set timer';
+      setError(errorMessage);
+      // Don't leave UI in inconsistent state - request status to sync
+      if (isConnected) {
+        BluetoothService.requestStatus().catch(console.error);
+      }
       throw err;
     }
   };
 
   const stopSession = async () => {
+    setError(null);
     try {
       setCurrentMode(0); // Optimistic update for instant UI
       setCurrentIntensity(0);
       setTimeLeft(0);
       await BluetoothService.setMode(0, 0);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to stop session');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to stop session';
+      setError(errorMessage);
+      // Revert optimistic update on failure - request status to get actual state
+      if (isConnected) {
+        BluetoothService.requestStatus().catch(console.error);
+      }
       throw err;
     }
   };
