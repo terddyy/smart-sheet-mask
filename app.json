@@ -7,7 +7,7 @@
     "orientation": "portrait",
     "icon": "./public/logo.jpg",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "splash": {
       "image": "./public/logo.jpg",
       "resizeMode": "contain",
@@ -40,15 +40,7 @@
       "favicon": "./public/logo.jpg"
     },
     "plugins": [
-      "expo-router",
-      [
-        "react-native-ble-plx",
-        {
-          "isBackgroundEnabled": true,
-          "modes": ["peripheral", "central"],
-          "bluetoothAlwaysPermission": "Allow $(PRODUCT_NAME) to connect to bluetooth devices"
-        }
-      ]
+      "expo-router"
     ],
     "extra": {
       "router": {},
