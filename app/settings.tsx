@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Switch, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, Switch, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AlarmClock, ShieldAlert, Moon, Info } from 'lucide-react-native';
 import SessionControl from '../components/SessionControl';
@@ -11,20 +11,20 @@ export default function Settings() {
     const [safetyTimeout, setSafetyTimeout] = useState(true);
 
     return (
-        <SafeAreaView className="flex-1 bg-midnight-navy">
-            <ScrollView className="flex-1 px-6 py-8">
+        <SafeAreaView style={styles.container}>
+            <ScrollView style={styles.content}>
                 {/* Header */}
-                <View className="mb-8">
-                    <Text className="text-4xl font-bold text-white mb-2">Settings</Text>
-                    <Text className="text-gray-400">Customize your experience</Text>
+                <View style={styles.header}>
+                    <Text style={styles.headerTitle}>Settings</Text>
+                    <Text style={styles.headerSubtitle}>Customize your experience</Text>
                 </View>
 
                 {/* Alarm Configuration */}
-                <View className="mb-6 p-6 bg-charcoal rounded-3xl">
-                    <View className="flex-row items-center justify-between mb-4">
-                        <View className="flex-row items-center">
+                <View style={styles.card}>
+                    <View style={styles.cardHeader}>
+                        <View style={styles.rowCenter}>
                             <AlarmClock {...({ size: 24, color: "#60a5fa" } as any)} />
-                            <Text className="text-white text-lg font-bold ml-3">Silent Alarm</Text>
+                            <Text style={styles.cardTitle}>Silent Alarm</Text>
                         </View>
                         <Switch
                             value={alarmEnabled}
@@ -34,12 +34,12 @@ export default function Settings() {
                         />
                     </View>
                     {alarmEnabled && (
-                        <View className="pl-9">
-                            <Text className="text-gray-400 text-sm mb-2">Wake-up time</Text>
-                            <TouchableOpacity className="bg-midnight-navy py-3 px-4 rounded-xl">
-                                <Text className="text-biolum-blue font-bold text-lg">{alarmTime}</Text>
+                        <View style={styles.cardContentIndented}>
+                            <Text style={styles.helperText}>Wake-up time</Text>
+                            <TouchableOpacity style={styles.timeButton}>
+                                <Text style={styles.timeButtonText}>{alarmTime}</Text>
                             </TouchableOpacity>
-                            <Text className="text-gray-500 text-xs mt-2">
+                            <Text style={styles.helperHint}>
                                 Gentle vibration will wake you up
                             </Text>
                         </View>
@@ -47,11 +47,11 @@ export default function Settings() {
                 </View>
 
                 {/* Safety Settings */}
-                <View className="mb-6 p-6 bg-charcoal rounded-3xl">
-                    <View className="flex-row items-center justify-between mb-4">
-                        <View className="flex-row items-center">
+                <View style={styles.card}>
+                    <View style={styles.cardHeader}>
+                        <View style={styles.rowCenter}>
                             <ShieldAlert {...({ size: 24, color: "#a78bfa" } as any)} />
-                            <Text className="text-white text-lg font-bold ml-3">Safety Timeout</Text>
+                            <Text style={styles.cardTitle}>Safety Timeout</Text>
                         </View>
                         <Switch
                             value={safetyTimeout}
@@ -60,17 +60,17 @@ export default function Settings() {
                             thumbColor={safetyTimeout ? '#a78bfa' : '#94a3b8'}
                         />
                     </View>
-                    <Text className="text-gray-400 text-sm pl-9">
+                    <Text style={styles.cardBodyText}>
                         Auto-stop after 45 minutes to prevent nerve desensitization
                     </Text>
                 </View>
 
                 {/* Dark Mode (Always On) */}
-                <View className="mb-6 p-6 bg-charcoal rounded-3xl">
-                    <View className="flex-row items-center justify-between">
-                        <View className="flex-row items-center">
+                <View style={styles.card}>
+                    <View style={styles.cardHeaderNoMargin}>
+                        <View style={styles.rowCenter}>
                             <Moon {...({ size: 24, color: "#a78bfa" } as any)} />
-                            <Text className="text-white text-lg font-bold ml-3">Dark Mode</Text>
+                            <Text style={styles.cardTitle}>Dark Mode</Text>
                         </View>
                         <Switch
                             value={darkMode}
@@ -82,13 +82,13 @@ export default function Settings() {
                 </View>
 
                 {/* Safety Guide */}
-                <TouchableOpacity className="mb-6 p-6 bg-biolum-blue/10 border-2 border-biolum-blue rounded-3xl">
-                    <View className="flex-row items-center mb-3">
+                <TouchableOpacity style={styles.guideCard}>
+                    <View style={styles.guideHeader}>
                         <Info {...({ size: 24, color: "#60a5fa" } as any)} />
-                        <Text className="text-biolum-blue text-lg font-bold ml-3">Safety Guide</Text>
+                        <Text style={styles.guideTitle}>Safety Guide</Text>
                     </View>
-                    <Text className="text-gray-300 text-sm leading-5">
-                        <Text className="font-bold">Important:</Text> Always sleep on your side or back.
+                    <Text style={styles.guideText}>
+                        <Text style={styles.guideTextBold}>Important:</Text> Always sleep on your side or back.
                         Never wear the mask while sleeping face down to avoid breathing restrictions.
                         {'\n\n'}
                         Tap to view full safety instructions.
@@ -96,9 +96,9 @@ export default function Settings() {
                 </TouchableOpacity>
 
                 {/* App Info */}
-                <View className="items-center mb-8">
-                    <Text className="text-gray-600 text-xs">S.M.A.R.T. Sleep Mask</Text>
-                    <Text className="text-gray-600 text-xs mt-1">Version 1.0.0 • Demo Mode</Text>
+                <View style={styles.appInfo}>
+                    <Text style={styles.appInfoText}>S.M.A.R.T. Sleep Mask</Text>
+                    <Text style={styles.appInfoTextSecondary}>Version 1.0.0 • Demo Mode</Text>
                 </View>
             </ScrollView>
 
@@ -107,3 +107,124 @@ export default function Settings() {
         </SafeAreaView>
     );
 }
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: "#0f172a",
+    },
+    content: {
+        flex: 1,
+        paddingHorizontal: 24,
+        paddingVertical: 32,
+    },
+    header: {
+        marginBottom: 32,
+    },
+    headerTitle: {
+        fontSize: 32,
+        fontWeight: "700",
+        color: "#ffffff",
+        marginBottom: 8,
+    },
+    headerSubtitle: {
+        color: "#9ca3af",
+    },
+    rowCenter: {
+        flexDirection: "row",
+        alignItems: "center",
+    },
+    card: {
+        marginBottom: 24,
+        padding: 24,
+        backgroundColor: "#1e293b",
+        borderRadius: 24,
+    },
+    cardHeader: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        marginBottom: 16,
+    },
+    cardHeaderNoMargin: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+    },
+    cardTitle: {
+        color: "#ffffff",
+        fontSize: 18,
+        fontWeight: "700",
+        marginLeft: 12,
+    },
+    cardContentIndented: {
+        paddingLeft: 36,
+    },
+    helperText: {
+        color: "#9ca3af",
+        fontSize: 14,
+        marginBottom: 8,
+    },
+    timeButton: {
+        backgroundColor: "#0f172a",
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+        borderRadius: 12,
+    },
+    timeButtonText: {
+        color: "#60a5fa",
+        fontWeight: "700",
+        fontSize: 18,
+    },
+    helperHint: {
+        color: "#6b7280",
+        fontSize: 12,
+        marginTop: 8,
+    },
+    cardBodyText: {
+        color: "#9ca3af",
+        fontSize: 14,
+        paddingLeft: 36,
+    },
+    guideCard: {
+        marginBottom: 24,
+        padding: 24,
+        backgroundColor: "rgba(96,165,250,0.1)",
+        borderWidth: 2,
+        borderColor: "#60a5fa",
+        borderRadius: 24,
+    },
+    guideHeader: {
+        flexDirection: "row",
+        alignItems: "center",
+        marginBottom: 12,
+    },
+    guideTitle: {
+        color: "#60a5fa",
+        fontSize: 18,
+        fontWeight: "700",
+        marginLeft: 12,
+    },
+    guideText: {
+        color: "#d1d5db",
+        fontSize: 14,
+        lineHeight: 20,
+    },
+    guideTextBold: {
+        fontWeight: "700",
+        color: "#d1d5db",
+    },
+    appInfo: {
+        alignItems: "center",
+        marginBottom: 32,
+    },
+    appInfoText: {
+        color: "#4b5563",
+        fontSize: 12,
+    },
+    appInfoTextSecondary: {
+        color: "#4b5563",
+        fontSize: 12,
+        marginTop: 4,
+    },
+});

@@ -1,32 +1,22 @@
 {
   "expo": {
-    "name": "Smart-sheet-mask",
+    "name": "smartsheet",
     "slug": "Smart-sheet-mask",
     "version": "1.0.0",
     "scheme": "smartsheetmask",
     "orientation": "portrait",
-    "icon": "./public/logo.jpg",
     "userInterfaceStyle": "light",
     "newArchEnabled": false,
-    "splash": {
-      "image": "./public/logo.jpg",
-      "resizeMode": "contain",
-      "backgroundColor": "#0B1220"
-    },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.smartsheetmask.app",
+      "bundleIdentifier": "com.smartsheetmask.app.preview",
       "infoPlist": {
         "NSBluetoothAlwaysUsageDescription": "This app uses Bluetooth to connect to and control your smart sheet mask.",
         "NSBluetoothPeripheralUsageDescription": "This app uses Bluetooth to connect to and control your smart sheet mask."
       }
     },
     "android": {
-      "package": "com.smartsheetmask.app",
-      "adaptiveIcon": {
-        "foregroundImage": "./public/logo.jpg",
-        "backgroundColor": "#0B1220"
-      },
+      "package": "com.smartsheetmask.app.preview",
       "edgeToEdgeEnabled": true,
       "permissions": [
         "android.permission.BLUETOOTH",
@@ -36,9 +26,7 @@
         "android.permission.ACCESS_FINE_LOCATION"
       ]
     },
-    "web": {
-      "favicon": "./public/logo.jpg"
-    },
+    "web": {},
     "plugins": [
       "expo-router"
     ],

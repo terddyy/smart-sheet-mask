@@ -238,8 +238,15 @@ class BluetoothService {
           }
 
           if (characteristic?.value) {
-            const data = base64.decode(characteristic.value);
-            this.handleResponse(data.trim());
+            try {
+              const data = base64.decode(characteristic.value);
+              const trimmed = data.trim();
+              if (trimmed.length > 0) {
+                this.handleResponse(trimmed);
+              }
+            } catch (decodeError) {
+              console.error('Failed to decode BLE response:', decodeError);
+            }
           }
         }
       );
@@ -342,15 +349,15 @@ class BluetoothService {
       throw new Error('No device reference');
     }
 
-    // Check actual device connection state
-    const isActuallyConnected = await this.device.isConnected();
-    if (!isActuallyConnected) {
-      this.isConnected = false;
-      this.emit('disconnected');
-      throw new Error('Device disconnected');
-    }
-
     try {
+      // Check actual device connection state
+      const isActuallyConnected = await this.device.isConnected();
+      if (!isActuallyConnected) {
+        this.isConnected = false;
+        this.emit('disconnected');
+        throw new Error('Device disconnected');
+      }
+
       const commandWithNewline = command + '\n';
       const base64Command = base64.encode(commandWithNewline);
 

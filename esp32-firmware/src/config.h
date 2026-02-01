@@ -5,11 +5,9 @@
 #define DEVICE_NAME "SMART_MassageMask"
 #define SERIAL_BAUD_RATE 115200
 
-// BLE UUIDs (must match React Native app)
-#define SERVICE_UUID        "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
-#define CHARACTERISTIC_UUID_RX "beb5483e-36e1-4688-b7f5-ea07361b26a8"  // Receive commands
-#define CHARACTERISTIC_UUID_TX "1c95d5e3-d8f7-413a-bf3d-7a2e5d7be87e"  // Send responses
-#define CHARACTERISTIC_UUID "0000FFE1-0000-1000-8000-00805F9B34FB"  // Kept for compatibility
+// BLE UUIDs (must match React Native app from commit 78dcb53)
+#define SERVICE_UUID        "0000FFE0-0000-1000-8000-00805F9B34FB"
+#define CHARACTERISTIC_UUID "0000FFE1-0000-1000-8000-00805F9B34FB"
 
 // Motor Configuration
 #define NUM_MOTORS 8

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import Slider from '@react-native-community/slider';
 
 interface IntensitySliderProps {
@@ -9,8 +9,8 @@ interface IntensitySliderProps {
 
 export default function IntensitySlider({ value, onValueChange }: IntensitySliderProps) {
     return (
-        <View className="w-full items-center">
-            <Text className="text-white text-lg font-bold mb-4">
+        <View style={styles.container}>
+            <Text style={styles.title}>
                 Intensity: {Math.round(value)}%
             </Text>
             <Slider
@@ -27,3 +27,16 @@ export default function IntensitySlider({ value, onValueChange }: IntensitySlide
         </View>
     );
 }
+
+const styles = StyleSheet.create({
+    container: {
+        width: "100%",
+        alignItems: "center",
+    },
+    title: {
+        color: "#ffffff",
+        fontSize: 18,
+        fontWeight: "700",
+        marginBottom: 16,
+    },
+});
