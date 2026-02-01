@@ -14,7 +14,8 @@ class SessionManager {
 private:
   MassageMode currentMode;
   int currentIntensity;
-  unsigned long timerEndTime;
+  unsigned long timerStartTime;
+  unsigned long timerDuration;
   bool timerActive;
 
 public:

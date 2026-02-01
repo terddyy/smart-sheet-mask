@@ -52,7 +52,14 @@ void setup() {
   // Initialize motor controller
   if (!motorController.begin()) {
     Serial.println("ERROR: Motor initialization failed!");
-    while (1) delay(1000);  // Halt on critical error
+    // Blink pattern on GPIO 2 (built-in LED) to indicate error
+    pinMode(2, OUTPUT);
+    while (1) {
+      digitalWrite(2, HIGH);
+      delay(200);
+      digitalWrite(2, LOW);
+      delay(200);
+    }
   }
   Serial.println("Motors initialized");
   
@@ -96,6 +103,20 @@ void loop() {
   if (currentTime - lastUpdateTime >= UPDATE_INTERVAL_MS) {
     lastUpdateTime = currentTime;
     updateMotorPattern(currentTime);
+  }
+  
+  // Battery monitoring (check every 10 seconds)
+  static unsigned long lastBatteryCheck = 0;
+  if (currentTime - lastBatteryCheck >= 10000) {
+    lastBatteryCheck = currentTime;
+    
+    int rawValue = analogRead(BATTERY_PIN);
+    float voltage = (rawValue / 4095.0) * 3.3 * BATTERY_VOLTAGE_DIVIDER;
+    
+    if (voltage < LOW_BATTERY_THRESHOLD && sessionManager.getMode() != MODE_OFF) {
+      Serial.printf("WARNING: Low battery: %.2fV\n", voltage);
+      bluetoothHandler.sendBatteryWarning(voltage);
+    }
   }
 }
 

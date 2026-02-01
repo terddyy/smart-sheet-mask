@@ -80,6 +80,18 @@ public:
    * @brief Notify timer completion
    */
   void notifyTimerComplete();
+  
+  /**
+   * @brief Send battery warning notification
+   * @param voltage Current battery voltage
+   */
+  void sendBatteryWarning(float voltage);
+  
+  /**
+   * @brief Get current battery level as percentage
+   * @return Battery level (0-100)
+   */
+  float getBatteryLevel();
 };
 
 #endif

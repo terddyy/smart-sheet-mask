@@ -98,14 +98,17 @@ void BluetoothHandler::processModeCommand(const String& command) {
   int mode = command.substring(1, 2).toInt();
   int intensity = command.substring(2).toInt();
   
-  // Validate mode and intensity
+  // Validate mode range
   if (mode < 0 || mode > 5) {
-    sendResponse("ERROR: Invalid mode value");
+    sendResponse("ERROR: Invalid mode value (0-5)");
     return;
   }
-
-  if (intensity < 0) intensity = 0;
-  if (intensity > 100) intensity = 100;
+  
+  // Validate intensity range
+  if (intensity < 0 || intensity > 100) {
+    sendResponse("ERROR: Invalid intensity value (0-100)");
+    return;
+  }
   
   sessionManager->setMode(static_cast<MassageMode>(mode));
   sessionManager->setIntensity(intensity);
@@ -150,13 +153,14 @@ void BluetoothHandler::sendResponse(const String& message) {
 
 void BluetoothHandler::sendStatus() {
   int batteryPercent = sessionManager->getBatteryPercentage();
+  float batteryLevel = getBatteryLevel();
   
   // Send as CSV format: S:mode,intensity,time,battery
   String status = "S:";
   status += String(sessionManager->getMode()) + ",";
   status += String(sessionManager->getIntensity()) + ",";
   status += String(sessionManager->getTimeRemaining()) + ",";
-  status += String(batteryPercent);
+  status += String((int)batteryLevel);
   
   Serial.print("Sending status: ");
   Serial.println(status);
@@ -168,4 +172,16 @@ void BluetoothHandler::sendStatus() {
 
 void BluetoothHandler::notifyTimerComplete() {
   sendResponse("TIMER_COMPLETE");
+}
+
+void BluetoothHandler::sendBatteryWarning(float voltage) {
+  sendResponse("WARNING: Low battery " + String(voltage, 2) + "V");
+}
+
+float BluetoothHandler::getBatteryLevel() {
+  int rawValue = analogRead(BATTERY_PIN);
+  float voltage = (rawValue / 4095.0) * 3.3 * BATTERY_VOLTAGE_DIVIDER;
+  // Convert to percentage (assuming 3.0V = 0%, 4.2V = 100% for Li-ion)
+  float percentage = ((voltage - 3.0) / 1.2) * 100.0;
+  return constrain(percentage, 0, 100);
 }
