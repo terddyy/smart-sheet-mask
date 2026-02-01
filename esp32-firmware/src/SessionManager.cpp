@@ -3,7 +3,8 @@
 SessionManager::SessionManager()
   : currentMode(MODE_OFF)
   , currentIntensity(0)
-  , timerEndTime(0)
+  , timerStartTime(0)
+  , timerDuration(0)
   , timerActive(false) {}
 
 void SessionManager::setMode(MassageMode mode) {
@@ -16,13 +17,14 @@ void SessionManager::setIntensity(int intensity) {
 
 void SessionManager::startTimer(int durationSeconds) {
   if (durationSeconds > 0) {
-    timerEndTime = millis() + (durationSeconds * 1000UL);
+    timerStartTime = millis();
+    timerDuration = durationSeconds * 1000UL;
     timerActive = true;
   }
 }
 
 bool SessionManager::checkTimer() {
-  if (timerActive && millis() >= timerEndTime) {
+  if (timerActive && (millis() - timerStartTime >= timerDuration)) {
     stopSession();
     return true;
   }
@@ -38,10 +40,10 @@ void SessionManager::stopSession() {
 unsigned long SessionManager::getTimeRemaining() const {
   if (!timerActive) return 0;
   
-  unsigned long now = millis();
-  if (now >= timerEndTime) return 0;
+  unsigned long elapsed = millis() - timerStartTime;
+  if (elapsed >= timerDuration) return 0;
   
-  return (timerEndTime - now) / 1000;  // Return in seconds
+  return (timerDuration - elapsed) / 1000;  // Return in seconds
 }
 
 float SessionManager::getBatteryVoltage() const {

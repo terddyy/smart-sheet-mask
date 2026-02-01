@@ -6,8 +6,10 @@
 #define SERIAL_BAUD_RATE 115200
 
 // BLE UUIDs (must match React Native app)
-#define SERVICE_UUID        "0000FFE0-0000-1000-8000-00805F9B34FB"
-#define CHARACTERISTIC_UUID "0000FFE1-0000-1000-8000-00805F9B34FB"
+#define SERVICE_UUID        "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
+#define CHARACTERISTIC_UUID_RX "beb5483e-36e1-4688-b7f5-ea07361b26a8"  // Receive commands
+#define CHARACTERISTIC_UUID_TX "1c95d5e3-d8f7-413a-bf3d-7a2e5d7be87e"  // Send responses
+#define CHARACTERISTIC_UUID "0000FFE1-0000-1000-8000-00805F9B34FB"  // Kept for compatibility
 
 // Motor Configuration
 #define NUM_MOTORS 8
@@ -18,6 +20,7 @@ const int MOTOR_PINS[NUM_MOTORS] = {18, 19, 21, 22, 23, 25, 26, 27};
 #define BATTERY_VOLTAGE_DIVIDER 2.0 // Voltage divider ratio (R1=R2)
 #define BATTERY_MIN_VOLTAGE 3.0     // Minimum battery voltage (3.0V for LiFePO4/Li-ion)
 #define BATTERY_MAX_VOLTAGE 4.2     // Maximum battery voltage (4.2V for Li-ion, 3.65V for LiFePO4)
+#define LOW_BATTERY_THRESHOLD 3.3   // Low battery warning threshold in volts
 #define ADC_RESOLUTION 4095.0       // 12-bit ADC resolution
 #define ADC_REFERENCE_VOLTAGE 3.3   // ESP32 ADC reference voltage
 
